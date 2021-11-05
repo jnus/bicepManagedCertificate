@@ -20,6 +20,9 @@ resource asp 'Microsoft.Web/serverfarms@2020-12-01' = {
 // Web App
 resource webApp 'Microsoft.Web/sites@2020-06-01' = {
   name: webAppName
+  dependsOn: [
+    asp
+  ]
   location: location
   properties: {
     serverFarmId: asp.id
@@ -36,6 +39,9 @@ resource existingDnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = {
 resource cnameRecord 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
   name: '${webAppName}.${dnsZone}'
   parent: existingDnsZone
+  dependsOn: [
+    existingDnsZone
+  ]
   properties: {
     TTL: 3600
     CNAMERecord: {
@@ -48,21 +54,28 @@ resource cnameRecord 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
 resource certificates 'Microsoft.Web/certificates@2021-02-01' =  {  
   name: dnsZone
   location: location
+  dependsOn: [
+    cnameRecord
+  ]
   properties: {
     canonicalName: '${webAppName}.${dnsZone}'
     serverFarmId: asp.id
   }
 }
-// ERROR: \"Message\": \"Properties.CanonicalName is invalid.  Certificate creation requires hostname jmn-dev-wa.segeswebsites.net added to an App Service in the serverFarm /subscriptions/8a3810d4-2f5b-4b66-90ca-9e96ac3e45be/resourceGroups/jmn-dev-rg/providers/Microsoft.Web/serverfarms/jmn-dev-asp
+// ERROR: \"Message\": \"Properties.CanonicalName is invalid.  Certificate creation requires hostname jmn-dev-wa.segeswebsites.net added to an App Service in the serverFarm...
 
 // Host name binding
 resource extDNSBinding 'Microsoft.Web/sites/hostNameBindings@2021-02-01' = {
   name: '${webAppName}.${dnsZone}'
   parent: webApp
+  dependsOn: [
+    certificates
+  ]
   properties: {
     siteName: webApp.name
     hostNameType: 'Verified'
     sslState: 'SniEnabled'
+    customHostNameDnsRecordType: 'CName'
     thumbprint: certificates.properties.thumbprint
   }
 }
