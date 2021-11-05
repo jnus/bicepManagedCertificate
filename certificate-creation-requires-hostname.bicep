@@ -53,6 +53,7 @@ resource certificates 'Microsoft.Web/certificates@2021-02-01' =  {
     serverFarmId: asp.id
   }
 }
+// ERROR: \"Message\": \"Properties.CanonicalName is invalid.  Certificate creation requires hostname jmn-dev-wa.segeswebsites.net added to an App Service in the serverFarm /subscriptions/8a3810d4-2f5b-4b66-90ca-9e96ac3e45be/resourceGroups/jmn-dev-rg/providers/Microsoft.Web/serverfarms/jmn-dev-asp
 
 // Host name binding
 resource extDNSBinding 'Microsoft.Web/sites/hostNameBindings@2021-02-01' = {
